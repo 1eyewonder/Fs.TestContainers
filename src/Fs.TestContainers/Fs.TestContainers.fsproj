@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Title>Fs.TestContainers</Title>
+    <Description>Fs.TestContainers does the thing!</Description>
+
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <Optimize>true</Optimize>
+    <Tailcalls>true</Tailcalls>
+    
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="paket.references" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Abstract.fs" />
+    <Compile Include="Images.fs" />
+    <Compile Include="Network.fs" />
+    <Compile Include="Volume.fs" />
+    <Compile Include="Container.fs" />
+    <Compile Include="Test.fs" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>
+ 

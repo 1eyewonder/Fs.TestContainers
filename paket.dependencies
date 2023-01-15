@@ -1,0 +1,47 @@
+source https://www.nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
+storage: none
+nuget FSharp.Core
+nuget Microsoft.SourceLink.GitHub copy_local: true
+nuget Expecto
+nuget YoloDev.Expecto.TestSdk
+nuget Microsoft.NET.Test.Sdk
+nuget altcover
+nuget TestContainers
+
+// [ FAKE GROUP ]
+group Build
+    storage: none
+    source https://www.nuget.org/api/v2
+    source https://api.nuget.org/v3/index.json
+    nuget Fake.IO.FileSystem
+    nuget Fake.Core.Target
+    nuget Fake.Core.ReleaseNotes
+    nuget FAKE.Core.Environment
+    nuget Fake.DotNet.Cli
+    nuget FAKE.Core.Process
+    nuget Fake.DotNet.AssemblyInfoFile
+    nuget Fake.Tools.Git
+    nuget Fake.DotNet.Paket
+    nuget Fake.Api.GitHub
+    nuget Fake.BuildServer.GitHubActions
+    nuget Argu
+    nuget Octokit
+
+group Docs
+    storage: none
+    source https://www.nuget.org/api/v2
+    source https://api.nuget.org/v3/index.json
+    nuget Argu
+    nuget FSharp.Compiler.Service
+    nuget FSharp.Core
+    nuget Fake.IO.FileSystem
+    nuget FAKE.Core.Environment
+    nuget Fake.DotNet.Cli
+    nuget FSharp.Formatting
+    nuget FSharp.Literate
+    nuget Fable.React
+
+group Analyzers
+  source https://www.nuget.org/api/v2
+  source https://api.nuget.org/v3/index.json
