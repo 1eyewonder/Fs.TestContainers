@@ -10,4 +10,14 @@
         <RepositoryUrl>https://github.com/1eyewonder/Fs.TestContainers</RepositoryUrl>
         <!-- owners is not supported in MSBuild -->
     </PropertyGroup>
+
+    <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>FS0075</NoWarn>
+    <!-- Only use test:DumpGraphChecking and times:timings.csv when debugging build times -->
+    <OtherFlags>$(OtherFlags) --test:GraphBasedChecking</OtherFlags>
+
+    <!-- https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/signature-files -->
+    <WarnOn>3218</WarnOn>
+  </PropertyGroup>
 </Project>

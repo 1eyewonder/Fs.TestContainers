@@ -1,3 +1,6 @@
 FSharp.Core
 Microsoft.SourceLink.GitHub
 TestContainers
+
+group analyzers
+FSharp.Analyzers.Build
