@@ -1,9 +1,9 @@
 namespace Fs.TestContainers.Tests
 
+open Expecto
+
 module ExpectoTemplate =
 
-    open Expecto
-
-    [<EntryPoint>]
-    let main argv =
-        Tests.runTestsInAssembly defaultConfig argv
+  [<EntryPoint>]
+  let main argv =
+    SayTests.tests |> runTestsWithCLIArgs Seq.empty argv

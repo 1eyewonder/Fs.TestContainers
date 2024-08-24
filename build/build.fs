@@ -60,7 +60,7 @@ let releaseBranch = "main"
 
 let tagFromVersionNumber versionNumber = sprintf "v%s" versionNumber
 
-let changelogFilename = __SOURCE_DIRECTORY__ </> ".." </> "CHANGELOG.md"
+let changelogFilename = __SOURCE_DIRECTORY__ </> ".." </> "RELEASE_NOTES.md"
 let changelog = Fake.Core.Changelog.load changelogFilename
 
 let mutable latestEntry =
@@ -192,7 +192,7 @@ module Changelog =
 
     if SemVer.isValid verArg then
       verArg
-    elif verArg.StartsWith("v") && SemVer.isValid verArg.[1..] then
+    elif verArg.StartsWith("v", StringComparison.Ordinal) && SemVer.isValid verArg.[1..] then
       let target = ctx.Context.FinalTarget
 
       Trace.traceImportantfn
@@ -482,9 +482,9 @@ let generateAssemblyInfo _ =
 
   let (|Fsproj|Csproj|Vbproj|) (projFileName: string) =
     match projFileName with
-    | f when f.EndsWith("fsproj") -> Fsproj
-    | f when f.EndsWith("csproj") -> Csproj
-    | f when f.EndsWith("vbproj") -> Vbproj
+    | f when f.EndsWith("fsproj", StringComparison.Ordinal) -> Fsproj
+    | f when f.EndsWith("csproj", StringComparison.Ordinal) -> Csproj
+    | f when f.EndsWith("vbproj", StringComparison.Ordinal) -> Vbproj
     | _ -> failwith (sprintf "Project file %s not supported. Unknown project type." projFileName)
 
   let releaseChannel =
@@ -496,7 +496,12 @@ let generateAssemblyInfo _ =
     AssemblyInfo.Title(projectName)
     AssemblyInfo.Product productName
     AssemblyInfo.Version latestEntry.AssemblyVersion
-    AssemblyInfo.Metadata("ReleaseDate", latestEntry.Date.Value.ToString("o"))
+    AssemblyInfo.Metadata(
+      "ReleaseDate",
+      latestEntry.Date
+      |> Option.map (fun d -> d.ToString("o"))
+      |> Option.defaultValue ""
+    )
     AssemblyInfo.FileVersion latestEntry.AssemblyVersion
     AssemblyInfo.InformationalVersion latestEntry.AssemblyVersion
     AssemblyInfo.Metadata("ReleaseChannel", releaseChannel)
@@ -601,7 +606,7 @@ let formatCode _ =
     [ srcCodeGlob; testsCodeGlob ]
     |> Seq.collect id
     // Ignore AssemblyInfo
-    |> Seq.filter (fun f -> f.EndsWith("AssemblyInfo.fs") |> not)
+    |> Seq.filter (fun f -> f.EndsWith("AssemblyInfo.fs", StringComparison.Ordinal) |> not)
     |> String.concat " "
     |> dotnet.fantomas
 
@@ -613,7 +618,7 @@ let checkFormatCode _ =
     [ srcCodeGlob; testsCodeGlob ]
     |> Seq.collect id
     // Ignore AssemblyInfo
-    |> Seq.filter (fun f -> f.EndsWith("AssemblyInfo.fs") |> not)
+    |> Seq.filter (fun f -> f.EndsWith("AssemblyInfo.fs", StringComparison.Ordinal) |> not)
     |> String.concat " "
     |> sprintf "%s --check"
     |> dotnet.fantomas
@@ -693,9 +698,9 @@ let initTargets () =
   "UpdateChangelog" ?=>! "GenerateAssemblyInfo"
   "UpdateChangelog" ==>! "PublishToNuGet"
 
-  "BuildDocs" ==>! "ReleaseDocs"
-  "BuildDocs" ?=>! "PublishToNuget"
-  "DotnetPack" ?=>! "BuildDocs"
+  // "BuildDocs" ==>! "ReleaseDocs"
+  // "BuildDocs" ?=>! "PublishToNuget"
+  // "DotnetPack" ?=>! "BuildDocs"
   "GenerateCoverageReport" ?=>! "ReleaseDocs"
 
   "DotnetRestore"

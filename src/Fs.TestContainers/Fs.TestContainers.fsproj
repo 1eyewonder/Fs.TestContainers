@@ -6,12 +6,10 @@
   <PropertyGroup>
     <Title>Fs.TestContainers</Title>
     <Description>Fs.TestContainers does the thing!</Description>
-
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <Optimize>true</Optimize>
     <Tailcalls>true</Tailcalls>
-    
   </PropertyGroup>
   <ItemGroup>
     <Content Include="paket.references" />
@@ -22,5 +20,5 @@
     <Compile Include="Container.fs" />
     <Compile Include="Test.fs" />
   </ItemGroup>
-  <Import Project="../../.paket/Paket.Restore.targets" />
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
