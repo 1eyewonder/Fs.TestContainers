@@ -3,11 +3,21 @@
         <!-- summary is not migrated from project.json, but you can use the <Description> property for that if needed. -->
         <PackageTags>f#, fsharp</PackageTags>
         <PackageProjectUrl>https://github.com/1eyewonder/Fs.TestContainers</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/1eyewonder/Fs.TestContainers/blob/master/LICENSE.md</PackageLicenseUrl>
+        <PackageLicenseUrl>https://github.com/1eyewonder/Fs.TestContainers/blob/main/LICENSE.md</PackageLicenseUrl>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <RepositoryType>git</RepositoryType>
         <Authors>1eyewonder</Authors>
         <RepositoryUrl>https://github.com/1eyewonder/Fs.TestContainers</RepositoryUrl>
         <!-- owners is not supported in MSBuild -->
     </PropertyGroup>
+
+    <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>FS0075</NoWarn>
+    <!-- Only use test:DumpGraphChecking and times:timings.csv when debugging build times -->
+    <OtherFlags>$(OtherFlags) --test:GraphBasedChecking</OtherFlags>
+
+    <!-- https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/signature-files -->
+    <WarnOn>3218</WarnOn>
+  </PropertyGroup>
 </Project>

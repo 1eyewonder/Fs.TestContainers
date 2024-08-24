@@ -1,5 +1,4 @@
 <Project>
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
     <PropertyGroup>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <IsPackable>true</IsPackable>
@@ -11,6 +10,7 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     </PropertyGroup>
     <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)../RELEASE_NOTES.md" Pack="true" PackagePath="/"/>    
         <None Include="$(MSBuildThisFileDirectory)../README.md" Pack="true" PackagePath="/"/>    
     </ItemGroup>
 </Project>

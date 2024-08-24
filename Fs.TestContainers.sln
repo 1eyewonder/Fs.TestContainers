@@ -11,8 +11,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ACBEE43C
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fs.TestContainers.Tests", "tests\Fs.TestContainers.Tests\Fs.TestContainers.Tests.fsproj", "{1CA2E092-2320-451D-A4F0-9ED7C7C528CA}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "docsTool", "docsTool\docsTool.fsproj", "{8855EC73-F6A1-43D3-AFBC-04A3E09F9BD9}"
-EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "build", "build\build.fsproj", "{40D2259D-991D-44C4-B45D-C88CE0710C23}"
 EndProject
 Global
