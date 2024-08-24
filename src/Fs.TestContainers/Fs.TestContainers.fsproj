@@ -16,7 +16,6 @@
   <ItemGroup>
     <Content Include="paket.references" />
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Abstract.fs" />
     <Compile Include="Images.fs" />
     <Compile Include="Network.fs" />
     <Compile Include="Volume.fs" />

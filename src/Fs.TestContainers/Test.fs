@@ -6,22 +6,20 @@ open System
 
 open Container
 
-let envVars =
-    [
-        "env1", "value1"
-        "env2", "value2"
-    ]
-    |> Map.ofList
+let envVars = [ "env1", "value1"; "env2", "value2" ] |> Map.ofList
 
-let imageName =
-    image {
-        name (Guid.NewGuid().ToString("D"))
-        directory' (CommonDirectoryPath.GetSolutionDirectory()) "World"
-        dockerfile "Dockerfile"
-    } |> Image.build
+let myImage =
+  image {
+    name "somecoolimage"
+    directory "testing"
+    dockerfile "Dockerfile"
+  }
+  |> ImageBuilder.build
 
 let container =
-    container {
-        entrypoint "nginx"
-        commands [|"-t"|]
-    } |> Container.build
+  container {
+    image myImage
+    commands [| "-t" |]
+    autoRemove
+  }
+  |> ContainerBuilder.build

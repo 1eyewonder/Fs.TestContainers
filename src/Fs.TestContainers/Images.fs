@@ -1,105 +1,139 @@
-/// <summary> Module containing image functions </summary>
 module Fs.TestContainers.Image
 
-open System.Collections.Generic
+open Docker.DotNet.Models
 open DotNet.Testcontainers.Builders
-open DotNet.Testcontainers.Images
+open System
 
-type ImageBuilder () =
-    inherit Abstract.AbstractBuilder<IImageFromDockerfileBuilder> ()
+[<RequireQualifiedAccess>]
+module ImageBuilder =
 
-    member _.Zero _ = ImageFromDockerfileBuilder()
+  /// <summary>
+  /// Sets the name of the Docker image
+  /// </summary>
+  /// <param name="name">Docker image name</param>
+  /// <param name="image">Docker image being built</param>
+  let withName (name: string) (image: ImageFromDockerfileBuilder) = image.WithName(name)
 
-    member _.Yield _ = ImageFromDockerfileBuilder()
+  /// <summary>
+  /// Sets the name of the Dockerfile
+  /// </summary>
+  /// <param name="dockerfile">Dockerfile name</param>
+  /// <param name="image">Docker image being built</param>
+  let withDockerfile dockerfile (image: ImageFromDockerfileBuilder) = image.WithDockerfile(dockerfile)
 
-    /// <summary>
-    /// Sets the name of the Docker image
-    /// </summary>
-    /// <param name="image">Docker image being built</param>
-    /// <param name="name">Docker image name</param>
-    [<CustomOperation "name">]
-    member _.withName(image: IImageFromDockerfileBuilder, name: string) = image.WithName(name)
+  /// <summary>
+  /// Sets the base directory of the Dockerfile
+  /// </summary>
+  /// <param name="directory">Dockerfile base directory</param>
+  /// <param name="image">Docker image being built</param>
+  let withDockerfileDirectory directory (image: ImageFromDockerfileBuilder) =
+    image.WithDockerfileDirectory(directory)
 
-    /// <summary>
-    /// Sets the name of the Docker image
-    /// </summary>
-    /// /// <param name="image">Docker image being built</param>
-    /// <param name="name">Docker image name</param>
-    [<CustomOperation "imageName">]
-    member _.withImageName(image: IImageFromDockerfileBuilder, name: IDockerImage) =
-        image.WithName(name)
+  /// <summary>
+  /// Sets the image build policy
+  /// </summary>
+  /// <param name="policy">Image build policy</param>
+  /// <param name="image">Docker image being built</param>
+  let withImageBuildPolicy (policy: ImageInspectResponse -> bool) (image: ImageFromDockerfileBuilder) =
+    image.WithImageBuildPolicy(policy)
 
-    /// <summary>
-    /// Sets the name of the Dockerfile
-    /// </summary>
-    /// /// <param name="image">Docker image being built</param>
-    /// <param name="dockerfile">Dockerfile name</param>
-    [<CustomOperation "dockerfile">]
-    member _.withDockerfile(image: IImageFromDockerfileBuilder, dockerfile: string) =
-        image.WithDockerfile(dockerfile)
+  /// <summary>
+  /// If true, Testcontainer will remove the existing Docker image. Otherwise, Testcontainer will keep the Docker image
+  /// </summary>
+  /// <param name="deleteIfExists">True, Testcontainer will remove the Docker image. Otherwise, Testcontainer will keep it</param>
+  /// <param name="image">Docker image being built</param>
+  let deleteIfExists deleteIfExists (image: ImageFromDockerfileBuilder) =
+    image.WithDeleteIfExists(deleteIfExists)
 
-    /// <summary>
-    /// Sets the base directory of the Dockerfile
-    /// </summary>
-    /// /// <param name="image">Docker image being built</param>
-    /// <param name="directory">Dockerfile base directory</param>
-    [<CustomOperation "directory">]
-    member _.withDockerfileDirectory(image: IImageFromDockerfileBuilder, directory: string) =
-        image.WithDockerfileDirectory(directory)
+  /// <summary>
+  /// Adds a Docker build argument
+  /// </summary>
+  /// <param name="name">Build argument name</param>
+  /// <param name="value">Build argument name</param>
+  let withBuildArg (name, value) (image: ImageFromDockerfileBuilder) = image.WithBuildArgument(name, value)
 
-    /// <summary>
-    /// Sets the base directory of the Dockerfile
-    /// </summary>
-    /// <param name="image">Docker image being built</param>
-    /// <param name="commonDirectoryPath">Common directory path that contains the Dockerfile base directory</param>
-    /// <param name="dockerfileDirectory">Dockerfile base directory</param>
-    [<CustomOperation "directory'">]
-    member _.withDockerfileDirectory2
-        (
-            image: IImageFromDockerfileBuilder,
-            commonDirectoryPath,
-            dockerfileDirectory
-        ) =
-        image.WithDockerfileDirectory(commonDirectoryPath, dockerfileDirectory)
+  /// <summary>
+  /// Adds arguments to Docker build
+  /// </summary>
+  /// <param name="args">Collection of build argument name * build argument value</param>
+  /// <param name="image">Docker image being built</param>
+  let withBuildArgs (args: (string * string) seq) (image: ImageFromDockerfileBuilder) =
+    args
+    |> Seq.fold
+      (fun (builder: ImageFromDockerfileBuilder) (name, value) -> builder.WithBuildArgument(name, value))
+      image
 
-    /// <summary>
-    /// If true, Testcontainer will remove the existing Docker image. Otherwise, Testcontainer will keep the Docker image
-    /// </summary>
-    /// /// <param name="image">Docker image being built</param>
-    /// <param name="deleteIfExists">True, Testcontainer will remove the Docker image. Otherwise, Testcontainer will keep it</param>
-    [<CustomOperation "deleteIfExists">]
-    member _.withDeleteIfExists(image: IImageFromDockerfileBuilder, deleteIfExists: bool) =
-        image.WithDeleteIfExists(deleteIfExists)
+  let build (image: ImageFromDockerfileBuilder) = image.Build()
 
-    /// <summary>
-    /// Adds a Docker build argument
-    /// </summary>
-    /// /// <param name="image">Docker image being built</param>
-    /// <param name="name">Build argument name</param>
-    /// <param name="value">Build argument name</param>
-    [<CustomOperation "arg">]
-    member _.withArgument(image: IImageFromDockerfileBuilder, name, value) =
-        image.WithBuildArgument(name, value)
+type ImageBuilder() =
 
-    /// <summary>
-    /// Adds arguments to Docker build
-    /// </summary>
-    /// /// <param name="image">Docker image being built</param>
-    /// <param name="args">Collection of build argument name * build argument value</param>
-    [<CustomOperation "args">]
-    member _.withBuildArgs(image, args: #IEnumerable<KeyValuePair<string, string>>) =
-        args
-        |> Seq.fold
-            (fun (acc: IImageFromDockerfileBuilder) arg -> acc.WithBuildArgument(arg.Key, arg.Value))
-            image
+  member _.Zero _ = ImageFromDockerfileBuilder()
+
+  member _.Yield _ = ImageFromDockerfileBuilder()
+
+  /// <summary>
+  /// Sets the name of the Docker image
+  /// </summary>
+  /// <param name="image">Docker image being built</param>
+  /// <param name="name">Docker image name</param>
+  [<CustomOperation("name")>]
+  member _.name(image: ImageFromDockerfileBuilder, name: string) = image |> ImageBuilder.withName name
+
+  /// <summary>
+  /// Sets the name of the Dockerfile
+  /// </summary>
+  /// <param name="image">Docker image being built</param>
+  /// <param name="dockerfile">Dockerfile name</param>
+  [<CustomOperation("dockerfile")>]
+  member _.dockerfile(image: ImageFromDockerfileBuilder, dockerfile: string) =
+    image |> ImageBuilder.withDockerfile dockerfile
+
+  /// <summary>
+  /// Sets the base directory of the Dockerfile
+  /// </summary>
+  /// <param name="image">Docker image being built</param>
+  /// <param name="directory">Dockerfile base directory</param>
+  [<CustomOperation("directory")>]
+  member _.directory(image: ImageFromDockerfileBuilder, directory: string) =
+    image |> ImageBuilder.withDockerfileDirectory directory
+
+  /// <summary>
+  /// If true, Testcontainer will remove the existing Docker image. Otherwise, Testcontainer will keep the Docker image
+  /// </summary>
+  /// <param name="image">Docker image being built</param>
+  /// <param name="deleteIfExists">Specifies if the image will be deleted if it already exists. Defaults to true if not provided</param>
+  [<CustomOperation("deleteIfExists")>]
+  member _.deleteIfExists(image: ImageFromDockerfileBuilder, ?deleteIfExists: bool) =
+    match deleteIfExists with
+    | Some deleteIfExists -> image |> ImageBuilder.deleteIfExists deleteIfExists
+    | None -> image |> ImageBuilder.deleteIfExists true
+
+  /// <summary>
+  /// Adds a Docker build argument
+  /// </summary>
+  /// <param name="image">Docker image being built</param>
+  /// <param name="name">Build argument name</param>
+  /// <param name="value">Build argument name</param>
+  [<CustomOperation("buildArg")>]
+  member _.buildArg(image: ImageFromDockerfileBuilder, name, value) =
+    image |> ImageBuilder.withBuildArg (name, value)
+
+  /// <summary>
+  /// Adds arguments to Docker build
+  /// </summary>
+  /// <param name="image">Docker image being built</param>
+  /// <param name="args">Collection of build argument name * build argument value</param>
+  [<CustomOperation("buildArgs")>]
+  member _.buildArgs(image, args: (string * string) seq) =
+    image |> ImageBuilder.withBuildArgs args
 
 let image = ImageBuilder()
 
-/// <summary>
-/// Builds the instance of <see cref="DotNet.TestContainers.Builders.IImageFromDockerfileBuilder"/> with the given configuration
-/// </summary>
-/// <returns>FullName of the created image.</returns>
-let build (image: IImageFromDockerfileBuilder) =
-    image.Build()
-    |> Async.AwaitTask
-    |> Async.RunSynchronously
+[<RequireQualifiedAccess>]
+module Image =
+
+  open DotNet.Testcontainers.Images
+
+  let create (image: IFutureDockerImage) = image.CreateAsync()
+
+  let delete (image: IFutureDockerImage) = image.DeleteAsync()

@@ -5,271 +5,368 @@ open System.Collections.Generic
 open System.Threading
 open System.Threading.Tasks
 open Docker.DotNet.Models
-open DotNet.Testcontainers.Builders
+open DotNet.Testcontainers
 open DotNet.Testcontainers.Configurations
 open DotNet.Testcontainers.Containers
 open DotNet.Testcontainers.Images
 open DotNet.Testcontainers.Networks
 open DotNet.Testcontainers.Volumes
 
-type ContainerBuilder () =
-    inherit Abstract.AbstractBuilder<ITestcontainersBuilder<ITestcontainersContainer>> ()
+[<RequireQualifiedAccess>]
+module ContainerBuilder =
 
-    member _.Zero _ = TestcontainersBuilder<ITestcontainersContainer>()
+  let withImageName (image: string) (builder: Builders.ContainerBuilder) = builder.WithImage(image)
 
-    member _.Yield _ = TestcontainersBuilder<ITestcontainersContainer>()
+  let withImage (image: IImage) (builder: Builders.ContainerBuilder) = builder.WithImage(image)
 
-    /// <summary>
-    /// Sets the module configuration of the Testcontainer to override custom properties
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="moduleConfiguration">Module configuration action</param>
-    [<CustomOperation "configure">]
-    member _.configureContainer(c : ITestcontainersBuilder<ITestcontainersContainer>,
-                                moduleConfiguration : Action<ITestcontainersContainer>) =
-        c.ConfigureContainer(moduleConfiguration)
+  let withImagePullPolicy (policy: ImageInspectResponse -> bool) (builder: Builders.ContainerBuilder) =
+    builder.WithImagePullPolicy(policy)
 
-    /// <summary>
-    /// Sets the Docker image, which is used to create the Testcontainer instances.
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="image">The Docker image.</param>
-    [<CustomOperation "image">]
-    member _.withImage(c : ITestcontainersBuilder<ITestcontainersContainer>, image : string) =
-        c.WithImage(image)
+  let withName (name: string) (builder: Builders.ContainerBuilder) = builder.WithName(name)
 
-    /// <summary>
-    /// Sets the Docker image, which is used to create the Testcontainer instances.
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="image">The Docker image.</param>
-    [<CustomOperation "image'">]
-    member _.withImage2(c : ITestcontainersBuilder<ITestcontainersContainer>, image : IDockerImage) =
-        c.WithImage(image)
+  let withHostName (hostname: string) (builder: Builders.ContainerBuilder) = builder.WithHostname(hostname)
 
-    /// <summary>
-    /// Sets the image pull policy of the Testcontainer
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="policy">The image pull policy</param>
-    [<CustomOperation "imagePull">]
-    member _.withImagePullPolicy(c : ITestcontainersBuilder<ITestcontainersContainer>,
-                                 policy: ImagesListResponse -> bool) =
-        c.WithImagePullPolicy(Func<_,_>(policy))
+  let withMacAddress (macAddress: string) (builder: Builders.ContainerBuilder) = builder.WithMacAddress(macAddress)
 
-    /// <summary>
-    /// Sets the name of the Testcontainer
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="name">Testcontainer's name</param>
-    [<CustomOperation "name">]
-    member _.withName(c : ITestcontainersBuilder<ITestcontainersContainer>, name : string) =
-        c.WithName(name)
+  let withWorkingDirectory (workingDirectory: string) (builder: Builders.ContainerBuilder) =
+    builder.WithWorkingDirectory(workingDirectory)
 
-    /// <summary>
-    /// Sets the hostname of the Testcontainer
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="hostname">Testcontainer's hostname</param>
-    [<CustomOperation "hostname">]
-    member _.withHostname(c : ITestcontainersBuilder<ITestcontainersContainer>, hostname : string) =
-        c.WithHostname(hostname)
+  let withEntryPoint (entrypoint: string) (builder: Builders.ContainerBuilder) = builder.WithEntrypoint(entrypoint)
 
-    /// <summary>
-    /// Sets the MAC address of the Testcontainer
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="macAddress">Testcontainer's MAC address</param>
-    [<CustomOperation "macAddress">]
-    member _.withMacAddress(c : ITestcontainersBuilder<ITestcontainersContainer>, macAddress : string) =
-        c.WithMacAddress(macAddress)
+  let withCommand (command: string[]) (builder: Builders.ContainerBuilder) = builder.WithCommand(command)
 
-    /// <summary>
-    /// Sets the working directory of the Testcontainer for the instruction sets
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="workingDirectory">Working directory</param>
-    [<CustomOperation "workingDirectory">]
-    member _.withWorkingDirectory(c : ITestcontainersBuilder<ITestcontainersContainer>, workingDirectory : string) =
-        c.WithWorkingDirectory(workingDirectory)
+  let withEnvironment (name: string, value: string) (builder: Builders.ContainerBuilder) =
+    builder.WithEnvironment(name, value)
 
-    /// <summary>
-    /// Overrides the entrypoint of the Testcontainer to configure an executable
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="entrypoint">Entrypoint executable</param>
-    [<CustomOperation "entrypoint">]
-    member _.withEntrypoint(c : ITestcontainersBuilder<ITestcontainersContainer>, entrypoint : string) =
-        c.WithEntrypoint(entrypoint)
+  let withEnvironmentVars (environmentVars: #IReadOnlyDictionary<string, string>) (builder: Builders.ContainerBuilder) =
+    builder.WithEnvironment(environmentVars)
 
-    /// <summary>
-    /// Overrides the command of the Testcontainer to provide defaults for executing
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="command">List of commands, "executable", "param1", "param2" or "param1", "param2""</param>
-    [<CustomOperation "commands">]
-    member _.withCommands(c : ITestcontainersBuilder<ITestcontainersContainer>, command : string[]) =
-        c.WithCommand(command)
+  let withExposedPort (port: int) (builder: Builders.ContainerBuilder) = builder.WithExposedPort(port)
 
-    /// <summary>
-    /// Exports the environment variable in the Testcontainer
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="name">Environment variable name</param>
-    /// <param name="value">Environment variable value</param>
-    [<CustomOperation "environment">]
-    member _.withEnvironment(c : ITestcontainersBuilder<ITestcontainersContainer>, name : string, value : string) =
-        c.WithEnvironment(name, value)
+  let withExposedPortString (port: string) (builder: Builders.ContainerBuilder) = builder.WithExposedPort(port)
 
-    /// <summary>
-    /// Exports the environment variable in the Testcontainer
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="environmentVars">Dictionary of environment variables</param>
-    [<CustomOperation "environment'">]
-    member _.withEnvironment(c : ITestcontainersBuilder<ITestcontainersContainer>, environmentVars : #IReadOnlyDictionary<string, string>) =
-        c.WithEnvironment(environmentVars)
+  let withPortBinding (port: int, assignRandomHostPort: bool option) (builder: Builders.ContainerBuilder) =
+    match assignRandomHostPort with
+    | Some assignRandomHostPort -> builder.WithPortBinding(port, assignRandomHostPort)
+    | None -> builder.WithPortBinding(port)
 
-    /// <summary>
-    /// Sets the port of the Testcontainer to expose, without publishing the port to the host system’s interfaces
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="port">Port to expose</param>
-    [<CustomOperation "exposedPort">]
-    member _.withExposedPort(c : ITestcontainersBuilder<ITestcontainersContainer>, port : int) =
-        c.WithExposedPort(port)
+  let withPortBindingString (port: string, assignRandomHostPort: bool option) (builder: Builders.ContainerBuilder) =
+    match assignRandomHostPort with
+    | Some assignRandomHostPort -> builder.WithPortBinding(port, assignRandomHostPort)
+    | None -> builder.WithPortBinding(port)
 
-    /// <summary>
-    /// Sets the port of the Testcontainer to expose, without publishing the port to the host system’s interfaces
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="port">Port to expose</param>
-    [<CustomOperation "exposedPort'">]
-    member _.withExposedPort2(c : ITestcontainersBuilder<ITestcontainersContainer>, port : string) =
-        c.WithExposedPort(port)
+  let withPortContainerBinding (hostPort: int, containerPort: int) (builder: Builders.ContainerBuilder) =
+    builder.WithPortBinding(hostPort, containerPort)
 
-    /// <summary>
-    /// Binds the port of the Testcontainer to the same port of the host machine
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="port">Port to bind between Testcontainer and host machine</param>
-    /// <param name="assignRandomHostPort">True, Testcontainer will bind the port to a random host port, otherwise the host and container ports are the same</param>
-    [<CustomOperation "portBinding">]
-    member _.withPortBinding(c : ITestcontainersBuilder<ITestcontainersContainer>, port : int, ?assignRandomHostPort : bool) =
-        match assignRandomHostPort with
-        | Some assignRandomHostPort -> c.WithPortBinding(port, assignRandomHostPort)
-        | None -> c.WithPortBinding(port)
+  let withPortContainerBindingString (hostPort: string, containerPort: string) (builder: Builders.ContainerBuilder) =
+    builder.WithPortBinding(hostPort, containerPort)
 
-    /// <summary>
-    /// Binds the port of the Testcontainer to the same port of the host machine
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="hostPort">Port of the host machine</param>
-    /// <param name="containerPort">Port of the Testcontainer</param>
-    [<CustomOperation "portBinding'">]
-    member _.withPortBinding2(c : ITestcontainersBuilder<ITestcontainersContainer>, hostPort : int, containerPort : int) =
-        c.WithPortBinding(hostPort, containerPort)
+  let withResourceMapping (resourceMapping: IResourceMapping) (builder: Builders.ContainerBuilder) =
+    builder.WithResourceMapping(resourceMapping)
 
-    /// <summary>
-    /// Binds the port of the Testcontainer to the same port of the host machine
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="port">Port to bind between Testcontainer and host machine</param>
-    /// <param name="assignRandomHostPort">True, Testcontainer will bind the port to a random host port, otherwise the host and container ports are the same</param>
-    /// <remarks>Append /tcp|udp|sctp to change the protocol e.g. "53/udp". Default: tcp</remarks>
-    [<CustomOperation "sPortBinding">]
-    member _.withPortBinding3(c : ITestcontainersBuilder<ITestcontainersContainer>, port : string, ?assignRandomHostPort : bool) =
-        match assignRandomHostPort with
-        | Some assignRandomHostPort -> c.WithPortBinding(port, assignRandomHostPort)
-        | None -> c.WithPortBinding(port)
+  let withResourceMappingString (source: string, destination: string) (builder: Builders.ContainerBuilder) =
+    builder.WithResourceMapping(source, destination)
 
-    /// <summary>
-    /// Binds the port of the Testcontainer to the same port of the host machine
-    /// </summary>
-    /// <param name="c">A configured instance of ITestcontainersBuilder</param>
-    /// <param name="hostPort">Port of the host machine</param>
-    /// <param name="containerPort">Port of the test container</param>
-    /// <remarks>Append /tcp|udp|sctp to change the protocol e.g. "53/udp". Default: tcp</remarks>
-    [<CustomOperation "sPortBinding'">]
-    member _.withPortBinding4(c : ITestcontainersBuilder<ITestcontainersContainer>, hostPort : string, containerPort : string) =
-        c.WithPortBinding(hostPort, containerPort)
+  let withResourceMappingBytes (source: byte[], destination: string) (builder: Builders.ContainerBuilder) =
+    builder.WithResourceMapping(source, destination)
 
-    [<CustomOperation "resourceMapping">]
-    member _.withResourceMapping(c : ITestcontainersBuilder<ITestcontainersContainer>, source : string, destination : string) =
-        c.WithResourceMapping(source, destination)
+  let withMount (mount: IMount) (builder: Builders.ContainerBuilder) = builder.WithMount(mount)
 
-    [<CustomOperation "resourceMapping'">]
-    member _.withResourceMapping2(c : ITestcontainersBuilder<ITestcontainersContainer>, source : byte[], destination : string) =
-        c.WithResourceMapping(source, destination)
+  let withBindMount
+    (source: string, destination: string, accessMode: AccessMode option)
+    (builder: Builders.ContainerBuilder)
+    =
+    match accessMode with
+    | Some accessMode -> builder.WithBindMount(source, destination, accessMode)
+    | None -> builder.WithBindMount(source, destination)
 
-    [<CustomOperation "resourceMapping''">]
-    member _.withResourceMapping3(c : ITestcontainersBuilder<ITestcontainersContainer>, resourceMapping : IResourceMapping) =
-        c.WithResourceMapping(resourceMapping)
+  let withVolumeMountString
+    (source: string, destination: string, accessMode: AccessMode option)
+    (builder: Builders.ContainerBuilder)
+    =
+    match accessMode with
+    | Some accessMode -> builder.WithVolumeMount(source, destination, accessMode)
+    | None -> builder.WithVolumeMount(source, destination)
 
-    [<CustomOperation "mount">]
-    member _.withMount(c : ITestcontainersBuilder<ITestcontainersContainer>, mount : IMount) =
-        c.WithMount(mount)
+  let withVolumeMount
+    (source: IVolume, destination: string, accessMode: AccessMode option)
+    (builder: Builders.ContainerBuilder)
+    =
+    match accessMode with
+    | Some accessMode -> builder.WithVolumeMount(source, destination, accessMode)
+    | None -> builder.WithVolumeMount(source, destination)
 
-    [<CustomOperation "bindMount">]
-    member _.withBindMount(c : ITestcontainersBuilder<ITestcontainersContainer>, source : string, destination : string, ?accessMode : AccessMode) =
-        match accessMode with
-        | Some accessMode -> c.WithBindMount(source, destination, accessMode)
-        | None -> c.WithBindMount(source, destination)
+  let withTmpfsMount (destination: string, accessMode: AccessMode option) (builder: Builders.ContainerBuilder) =
+    match accessMode with
+    | Some accessMode -> builder.WithTmpfsMount(destination, accessMode)
+    | None -> builder.WithTmpfsMount(destination)
 
-    [<CustomOperation "volumeMount">]
-    member _.withVolumeMount(c : ITestcontainersBuilder<ITestcontainersContainer>, source : string, destination : string, ?accessMode : AccessMode) =
-        match accessMode with
-        | Some accessMode -> c.WithVolumeMount(source, destination, accessMode)
-        | None -> c.WithVolumeMount(source, destination)
+  let withNetworkString (name: string) (builder: Builders.ContainerBuilder) = builder.WithNetwork(name)
 
-    [<CustomOperation "volumeMount'">]
-    member _.withVolumeMount2(c : ITestcontainersBuilder<ITestcontainersContainer>, source : IDockerVolume, destination : string, ?accessMode : AccessMode) =
-        match accessMode with
-        | Some accessMode -> c.WithVolumeMount(source, destination, accessMode)
-        | None -> c.WithVolumeMount(source, destination)
+  let withNetwork (network: INetwork) (builder: Builders.ContainerBuilder) = builder.WithNetwork(network)
 
-    [<CustomOperation "tmpfsMount">]
-    member _.withTmpfsMount(c : ITestcontainersBuilder<ITestcontainersContainer>, destination : string, ?accessMode : AccessMode) =
-        match accessMode with
-        | Some accessMode -> c.WithTmpfsMount(destination, accessMode)
-        | None -> c.WithTmpfsMount(destination)
+  let withNetworkAliases (aliases: string seq) (builder: Builders.ContainerBuilder) =
+    builder.WithNetworkAliases(aliases)
 
-    [<CustomOperation "network">]
-    member _.withNetwork(c : ITestcontainersBuilder<ITestcontainersContainer>, source : string, destination : string) =
-        c.WithNetwork(source, destination)
+  let withAutoRemove (autoRemove: bool) (builder: Builders.ContainerBuilder) = builder.WithAutoRemove(autoRemove)
 
-    [<CustomOperation "network'">]
-    member _.withNetwork2(c : ITestcontainersBuilder<ITestcontainersContainer>, network : IDockerNetwork) =
-        c.WithNetwork(network)
+  let withPrivileged (privileged: bool) (builder: Builders.ContainerBuilder) = builder.WithPrivileged(privileged)
 
-    [<CustomOperation "networkAliases">]
-    member _.withNetworkAliases(c : ITestcontainersBuilder<ITestcontainersContainer>, aliases : string seq) =
-        c.WithNetworkAliases(aliases)
+  let withWaitStrategy (waitStrategy: IWaitForContainerOS) (builder: Builders.ContainerBuilder) =
+    builder.WithWaitStrategy(waitStrategy)
 
-    member _.withAutoRemove(c : ITestcontainersBuilder<ITestcontainersContainer>, autoRemove : bool) =
-        c.WithAutoRemove(autoRemove)
+  let withCreateParameterModifier
+    (parameterModifier: CreateContainerParameters -> unit)
+    (builder: Builders.ContainerBuilder)
+    =
+    builder.WithCreateParameterModifier(parameterModifier)
 
-    [<CustomOperation "privileged">]
-    member _.withPrivileged(c : ITestcontainersBuilder<ITestcontainersContainer>, privileged : bool) =
-        c.WithPrivileged(privileged)
+  let withStartupCallback
+    (startupCallback: IContainer -> CancellationToken -> Task)
+    (builder: Builders.ContainerBuilder)
+    =
+    builder.WithStartupCallback(startupCallback)
 
-    [<CustomOperation "waitStrategy">]
-    member _.withWaitStrategy(c : ITestcontainersBuilder<ITestcontainersContainer>, waitStrategy : IWaitForContainerOS) =
-        c.WithWaitStrategy(waitStrategy)
+  let build (builder: Builders.ContainerBuilder) = builder.Build()
 
-    [<CustomOperation "parameterModifier">]
-    member _.withCreateContainerParametersModifier(c : ITestcontainersBuilder<ITestcontainersContainer>, parameterModifier : CreateContainerParameters -> unit) =
-        c.WithCreateContainerParametersModifier(Action<_>(parameterModifier))
+type ContainerBuilder() =
 
-    [<CustomOperation "startupCallback">]
-    member _.withStartupCallback(c : ITestcontainersBuilder<ITestcontainersContainer>, startupCallback : IRunningDockerContainer -> CancellationToken -> Task) =
-        c.WithStartupCallback(Func<_,_,_>(startupCallback))
+  member _.Zero _ = Builders.ContainerBuilder()
+
+  member _.Yield _ = Builders.ContainerBuilder()
+
+  /// <summary>
+  /// Sets the Docker image, which is used to create the Testcontainer instances.
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="image">The Docker image.</param>
+  [<CustomOperation "imageName">]
+  member _.imageName(builder: Builders.ContainerBuilder, image: string) =
+    builder |> ContainerBuilder.withImageName image
+
+  /// <summary>
+  /// Sets the Docker image, which is used to create the Testcontainer instances.
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="image">The Docker image.</param>
+  [<CustomOperation "image">]
+  member _.image(builder: Builders.ContainerBuilder, image: IImage) =
+    builder |> ContainerBuilder.withImage image
+
+  /// <summary>
+  /// Sets the image pull policy of the Testcontainer
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="policy">The image pull policy</param>
+  [<CustomOperation "imagePullPolicy">]
+  member _.imagePullPolicy(builder: Builders.ContainerBuilder, policy: ImageInspectResponse -> bool) =
+    builder |> ContainerBuilder.withImagePullPolicy policy
+
+  /// <summary>
+  /// Sets the name of the Testcontainer
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="name">Testcontainer's name</param>
+  [<CustomOperation "name">]
+  member _.withName(builder: Builders.ContainerBuilder, name: string) =
+    builder |> ContainerBuilder.withName name
+
+  /// <summary>
+  /// Sets the hostname of the Testcontainer
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="hostname">Testcontainer's hostname</param>
+  [<CustomOperation "hostname">]
+  member _.hostname(builder: Builders.ContainerBuilder, hostname: string) =
+    builder |> ContainerBuilder.withHostName hostname
+
+  /// <summary>
+  /// Sets the MAC address of the Testcontainer
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="macAddress">Testcontainer's MAC address</param>
+  [<CustomOperation "macAddress">]
+  member _.macAddress(builder: Builders.ContainerBuilder, macAddress: string) =
+    builder |> ContainerBuilder.withMacAddress macAddress
+
+  /// <summary>
+  /// Sets the working directory of the Testcontainer for the instruction sets
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="workingDirectory">Working directory</param>
+  [<CustomOperation "workingDirectory">]
+  member _.workingDirectory(builder: Builders.ContainerBuilder, workingDirectory: string) =
+    builder |> ContainerBuilder.withWorkingDirectory workingDirectory
+
+  /// <summary>
+  /// Overrides the entrypoint of the Testcontainer to configure an executable
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="entrypoint">Entrypoint executable</param>
+  [<CustomOperation "entrypoint">]
+  member _.entrypoint(builder: Builders.ContainerBuilder, entrypoint: string) =
+    builder |> ContainerBuilder.withEntryPoint entrypoint
+
+  /// <summary>
+  /// Overrides the command of the Testcontainer to provide defaults for executing
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="command">List of commands, "executable", "param1", "param2" or "param1", "param2""</param>
+  [<CustomOperation "commands">]
+  member _.commands(builder: Builders.ContainerBuilder, command: string[]) =
+    builder |> ContainerBuilder.withCommand command
+
+  /// <summary>
+  /// Exports the environment variable in the Testcontainer
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="name">Environment variable name</param>
+  /// <param name="value">Environment variable value</param>
+  [<CustomOperation "environment">]
+  member _.environment(builder: Builders.ContainerBuilder, name: string, value: string) =
+    builder |> ContainerBuilder.withEnvironment (name, value)
+
+  /// <summary>
+  /// Exports the environment variable in the Testcontainer
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="environmentVars">Dictionary of environment variables</param>
+  [<CustomOperation "environment'">]
+  member _.withEnvironment(builder: Builders.ContainerBuilder, environmentVars: #IReadOnlyDictionary<string, string>) =
+    builder |> ContainerBuilder.withEnvironmentVars environmentVars
+
+  /// <summary>
+  /// Sets the port of the Testcontainer to expose, without publishing the port to the host system’s interfaces
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="port">Port to expose</param>
+  [<CustomOperation "exposedPortInt">]
+  member _.exposedPortInt(builder: Builders.ContainerBuilder, port: int) =
+    builder |> ContainerBuilder.withExposedPort port
+
+  /// <summary>
+  /// Sets the port of the Testcontainer to expose, without publishing the port to the host system’s interfaces
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="port">Port to expose</param>
+  [<CustomOperation "exposedPortString">]
+  member _.exposedPortString(builder: Builders.ContainerBuilder, port: string) =
+    builder |> ContainerBuilder.withExposedPortString port
+
+  /// <summary>
+  /// Binds the port of the Testcontainer to the same port of the host machine
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="port">Port to bind between Testcontainer and host machine</param>
+  /// <param name="assignRandomHostPort">True, Testcontainer will bind the port to a random host port, otherwise the host and container ports are the same</param>
+  [<CustomOperation "portBinding">]
+  member _.portBinding(builder: Builders.ContainerBuilder, port: int, ?assignRandomHostPort: bool) =
+    builder |> ContainerBuilder.withPortBinding (port, assignRandomHostPort)
+
+  /// <summary>
+  /// Binds the port of the Testcontainer to the same port of the host machine
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="port">Port to bind between Testcontainer and host machine</param>
+  /// <param name="assignRandomHostPort">True, Testcontainer will bind the port to a random host port, otherwise the host and container ports are the same</param>
+  /// <remarks>Append /tcp|udp|sctp to change the protocol e.g. "53/udp". Default: tcp</remarks>
+  [<CustomOperation "portBindingString">]
+  member _.portBindingString(builder: Builders.ContainerBuilder, port: string, ?assignRandomHostPort: bool) =
+    builder |> ContainerBuilder.withPortBindingString (port, assignRandomHostPort)
+
+  /// <summary>
+  /// Binds the port of the Testcontainer to the same port of the host machine
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="hostPort">Port of the host machine</param>
+  /// <param name="containerPort">Port of the Testcontainer</param>
+  [<CustomOperation "portContainerBinding">]
+  member _.portContainerBinding(builder: Builders.ContainerBuilder, hostPort: int, containerPort: int) =
+    builder |> ContainerBuilder.withPortContainerBinding (hostPort, containerPort)
+
+  /// <summary>
+  /// Binds the port of the Testcontainer to the same port of the host machine
+  /// </summary>
+  /// <param name="c">A configured instance of ContainerBuilder</param>
+  /// <param name="hostPort">Port of the host machine</param>
+  /// <param name="containerPort">Port of the test container</param>
+  /// <remarks>Append /tcp|udp|sctp to change the protocol e.g. "53/udp". Default: tcp</remarks>
+  [<CustomOperation "portContainerBindingString">]
+  member _.portContainerBindingString(builder: Builders.ContainerBuilder, hostPort: string, containerPort: string) =
+    builder
+    |> ContainerBuilder.withPortContainerBindingString (hostPort, containerPort)
+
+  [<CustomOperation "resourceMappingString">]
+  member _.resourceMappingString(builder: Builders.ContainerBuilder, source: string, destination: string) =
+    builder |> ContainerBuilder.withResourceMappingString (source, destination)
+
+  [<CustomOperation "resourceMappingBytes">]
+  member _.resourceMappingBytes(builder: Builders.ContainerBuilder, source: byte[], destination: string) =
+    builder |> ContainerBuilder.withResourceMappingBytes (source, destination)
+
+  [<CustomOperation "resourceMapping">]
+  member _.resourceMapping(builder: Builders.ContainerBuilder, resourceMapping: IResourceMapping) =
+    builder |> ContainerBuilder.withResourceMapping resourceMapping
+
+  [<CustomOperation "mount">]
+  member _.mount(builder: Builders.ContainerBuilder, mount: IMount) =
+    builder |> ContainerBuilder.withMount mount
+
+  [<CustomOperation "bindMount">]
+  member _.bindMount(builder: Builders.ContainerBuilder, source: string, destination: string, ?accessMode: AccessMode) =
+    builder |> ContainerBuilder.withBindMount (source, destination, accessMode)
+
+  [<CustomOperation "volumeMountString">]
+  member _.volumeMountString
+    (builder: Builders.ContainerBuilder, source: string, destination: string, ?accessMode: AccessMode)
+    =
+    builder
+    |> ContainerBuilder.withVolumeMountString (source, destination, accessMode)
+
+  [<CustomOperation "volumeMount">]
+  member _.volumeMount
+    (builder: Builders.ContainerBuilder, source: IVolume, destination: string, ?accessMode: AccessMode)
+    =
+    builder |> ContainerBuilder.withVolumeMount (source, destination, accessMode)
+
+  [<CustomOperation "tmpfsMount">]
+  member _.tmpfsMount(builder: Builders.ContainerBuilder, destination: string, ?accessMode: AccessMode) =
+    builder |> ContainerBuilder.withTmpfsMount (destination, accessMode)
+
+  [<CustomOperation "networkString">]
+  member _.networkString(builder: Builders.ContainerBuilder, name: string) =
+    builder |> ContainerBuilder.withNetworkString name
+
+  [<CustomOperation "network">]
+  member _.network(builder: Builders.ContainerBuilder, network: INetwork) =
+    builder |> ContainerBuilder.withNetwork network
+
+  [<CustomOperation "networkAliases">]
+  member _.networkAliases(builder: Builders.ContainerBuilder, aliases: string seq) =
+    builder |> ContainerBuilder.withNetworkAliases aliases
+
+  [<CustomOperation "autoRemove">]
+  member _.autoRemove(builder: Builders.ContainerBuilder, ?autoRemove: bool) =
+    builder |> ContainerBuilder.withAutoRemove (defaultArg autoRemove true)
+
+  [<CustomOperation "privileged">]
+  member _.privileged(builder: Builders.ContainerBuilder, privileged: bool) =
+    builder |> ContainerBuilder.withPrivileged privileged
+
+  [<CustomOperation "waitStrategy">]
+  member _.waitStrategy(builder: Builders.ContainerBuilder, waitStrategy: IWaitForContainerOS) =
+    builder |> ContainerBuilder.withWaitStrategy waitStrategy
+
+  [<CustomOperation "createParameterModifier">]
+  member _.createParameterModifier
+    (builder: Builders.ContainerBuilder, parameterModifier: CreateContainerParameters -> unit)
+    =
+    builder |> ContainerBuilder.withCreateParameterModifier parameterModifier
+
+  [<CustomOperation "startupCallback">]
+  member _.startupCallback
+    (builder: Builders.ContainerBuilder, startupCallback: IContainer -> CancellationToken -> Task)
+    =
+    builder |> ContainerBuilder.withStartupCallback startupCallback
 
 let container = ContainerBuilder()
-
-/// <summary>
-/// Builds the container with the given configuration
-/// </summary>
-/// <returns>FullName of the created image.</returns>
-let build (container: ITestcontainersBuilder<ITestcontainersContainer>) =
-    container.Build()
