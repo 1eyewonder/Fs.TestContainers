@@ -77,7 +77,7 @@ module ContainerBuilder =
   /// </summary>
   /// <param name="command">List of commands, "executable", "param1", "param2" or "param1", "param2""</param>
   /// <param name="builder">A configured instance of ContainerBuilder</param>
-  let withCommand (command: string[]) (builder: Builders.ContainerBuilder) = builder.WithCommand(command)
+  let withCommand (command: string array) (builder: Builders.ContainerBuilder) = builder.WithCommand(command)
 
   /// <summary>
   /// Exports the environment variable in the Testcontainer
@@ -172,7 +172,7 @@ module ContainerBuilder =
   /// <param name="source">Source of the resource mapping</param>
   /// <param name="destination">Destination of the resource mapping</param>
   /// <param name="builder">A configured instance of ContainerBuilder</param>
-  let withResourceMappingBytes (source: byte[], destination: string) (builder: Builders.ContainerBuilder) =
+  let withResourceMappingBytes (source: byte array, destination: string) (builder: Builders.ContainerBuilder) =
     builder.WithResourceMapping(source, destination)
 
   /// <summary>

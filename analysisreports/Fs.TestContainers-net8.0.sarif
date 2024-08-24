@@ -1,0 +1,82 @@
+{
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.6.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "results": [
+        {
+          "ruleId": "IONIDE-002",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "Prefer postfix syntax for arrays."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Fs.TestContainers/Container.fs"
+                },
+                "region": {
+                  "startLine": 397,
+                  "startColumn": 66,
+                  "endLine": 397,
+                  "endColumn": 74
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "IONIDE-002",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "Prefer postfix syntax for arrays."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Fs.TestContainers/Container.fs"
+                },
+                "region": {
+                  "startLine": 497,
+                  "startColumn": 77,
+                  "endLine": 497,
+                  "endColumn": 83
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "Ionide.Analyzers.Cli",
+          "version": "0.27.0.0",
+          "informationUri": "https://ionide.io/FSharp.Analyzers.SDK/",
+          "rules": [
+            {
+              "id": "IONIDE-002",
+              "name": "Prefer postfix syntax for arrays.",
+              "shortDescription": {
+                "text": "Detect if generic type should be in the postfix position.",
+                "markdown": "Detect if generic type should be in the postfix position."
+              },
+              "helpUri": "https://ionide.io/ionide-analyzers/style/002.html"
+            }
+          ]
+        }
+      },
+      "invocations": [
+        {
+          "startTimeUtc": "2024-08-24T04:11:06.112Z",
+          "endTimeUtc": "2024-08-24T04:11:06.159Z",
+          "executionSuccessful": true
+        }
+      ],
+      "columnKind": "utf16CodeUnits"
+    }
+  ]
+}

@@ -38,3 +38,28 @@ jobs:
       run: ./build.cmd
       env:
         CI: true
+
+  # Separate job to run F# analyzers
+  analyzers:
+      runs-on: windows-latest
+
+      steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+
+      - name: Restore tools
+        run: dotnet tool restore
+
+      - name: Build
+        if: runner.os == 'Windows'
+        run: ./build.cmd analyzers
+        env:
+          CI: true
+        continue-on-error: true
+
+      - name: Upload SARIF files
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+            sarif_file: src/reports
