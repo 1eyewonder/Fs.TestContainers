@@ -25,10 +25,6 @@ jobs:
       with:
         dotnet-version: '8.x'
 
-    # Not specifying a version will attempt to install via global.json
-    - name: Use .NET Core global.json
-      uses: actions/setup-dotnet@v4
-
     - name: Build
       if: runner.os != 'Windows'
       run: |
