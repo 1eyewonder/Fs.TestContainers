@@ -10,14 +10,15 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use .NET 6 SDK
-      uses: actions/setup-dotnet@v1
+    - uses: actions/checkout@v4
+    - name: Use .NET 8 SDK
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '6.x'
+        dotnet-version: '8.x'
+
     # Not specifying a version will attempt to install via global.json
     - name: Use .NET Core global.json
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
 
     - name: Build
       if: runner.os != 'Windows'
@@ -26,6 +27,7 @@ jobs:
         ./build.sh
       env:
         CI: true
+
     - name: Build
       if: runner.os == 'Windows'
       run: ./build.cmd

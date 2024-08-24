@@ -48,8 +48,6 @@ let coverageThresholdPercent = 80
 let coverageReportDir = __SOURCE_DIRECTORY__ </> ".." </> "docs" </> "coverage"
 
 let docsDir = __SOURCE_DIRECTORY__ </> ".." </> "docs"
-let docsSrcDir = __SOURCE_DIRECTORY__ </> ".." </> "docsSrc"
-let docsToolDir = __SOURCE_DIRECTORY__ </> ".." </> "docsTool"
 
 let gitOwner = "1eyewonder"
 let gitRepoName = "Fs.TestContainers"
@@ -78,9 +76,9 @@ let docsSiteBaseUrl = sprintf "https://%s.github.io/%s" gitOwner gitRepoName
 
 let disableCodeCoverage = environVarAsBoolOrDefault "DISABLE_COVERAGE" false
 
-let githubToken = Environment.environVarOrNone "GITHUB_TOKEN"
+let githubToken = Environment.environVarOrNone "MY_GITHUB_TOKEN"
 
-let nugetToken = Environment.environVarOrNone "NUGET_TOKEN"
+let nugetToken = Environment.environVarOrNone "MY_;NUGET_TOKEN"
 
 //-----------------------------------------------------------------------------
 // Helpers
@@ -289,10 +287,9 @@ let updateChangelog ctx =
       "Version %s already exists in %s, released on %s"
       verStr
       changelogFilename
-      (if entry.Date.IsSome then
-         entry.Date.Value.ToString("yyyy-MM-dd")
-       else
-         "(no date specified)")
+      (match entry.Date with
+       | Some d -> d.ToString("yyyy-MM-dd")
+       | None -> "(no date specified)")
 
     failwith "Can't release with a duplicate version number")
 
@@ -303,10 +300,9 @@ let updateChangelog ctx =
       "You're trying to release version %s, but a later version %s already exists, released on %s"
       verStr
       entry.SemVer.AsString
-      (if entry.Date.IsSome then
-         entry.Date.Value.ToString("yyyy-MM-dd")
-       else
-         "(no date specified)")
+      (match entry.Date with
+       | Some d -> d.ToString("yyyy-MM-dd")
+       | None -> "(no date specified)")
 
     failwith "Can't release with a version number older than an existing release")
 
@@ -356,7 +352,7 @@ let updateChangelog ctx =
 
   let tailLines = File.read changelogFilename |> List.ofSeq |> List.rev
 
-  let isRef line =
+  let isRef (line: string) =
     System.Text.RegularExpressions.Regex.IsMatch(line, @"^\[.+?\]:\s?[a-z]+://.*$")
 
   let linkReferenceTargets =
@@ -703,11 +699,11 @@ let initTargets () =
   // "DotnetPack" ?=>! "BuildDocs"
   "GenerateCoverageReport" ?=>! "ReleaseDocs"
 
-  "DotnetRestore"
-  ==> "CheckFormatCode"
-  ==> "DotnetBuild"
-  ==> "FSharpAnalyzers"
-  ==> "DotnetTest"
+  "DotnetRestore" ==>! "CheckFormatCode"
+  "CheckFormatCode" ==>! "DotnetBuild"
+  "DotnetBuild" ==>! "FSharpAnalyzers"
+
+  "DotnetBuild" ==> "DotnetTest"
   =?> ("GenerateCoverageReport", not disableCodeCoverage)
   ==> "DotnetPack"
   // ==> "SourceLinkTest"

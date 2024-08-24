@@ -1,5 +1,6 @@
 source https://api.nuget.org/v3/index.json
 storage: none
+framework: auto-detect
 nuget FSharp.Core
 nuget Microsoft.SourceLink.GitHub copy_local: true
 nuget Expecto
@@ -10,6 +11,7 @@ nuget TestContainers
 
 group Build
   storage: none
+  framework: auto-detect
   source https://api.nuget.org/v3/index.json
   nuget Fake.IO.FileSystem
   nuget Fake.Core.Target
@@ -28,6 +30,7 @@ group Build
 group Analyzers
   source https://api.nuget.org/v3/index.json
   storage: analyzers
+  framework: auto-detect
 
   nuget FSharp.Analyzers.Build
   nuget G-Research.FSharp.Analyzers
